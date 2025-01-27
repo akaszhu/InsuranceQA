@@ -1,0 +1,16 @@
+.env
+debug.log
+config.ini
+credentials.json
+token.json
+__pycache__/
+fuc_api.py
+tests.py
+relation_mapping.json
+my_env
+my_env/
+router_data.json
+history_summary.json
+long_history.json
+long_history.txt
+history.txt

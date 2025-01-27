@@ -1,0 +1,17 @@
+pytesseract
+selinium
+streamlit
+python-docx 
+pdf2image  
+Pillow
+python-dotenv
+langchain 
+langchain-community 
+chromadb 
+jq
+opeani
+tiktoken
+pyautogen
+IPython
+markdownify
+pypdf
