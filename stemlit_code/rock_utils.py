@@ -222,7 +222,7 @@ prompt = "write about atria"
 message=[{"role": "user", "content": "You are a helpful assistant that creates concise difference tables for pharmaceutical products"},
                     {"role": "assistant", "content": "How can i help you today"},
                     {"role": "user", "content": f"{prompt}"}]
-message=[
+messages=[
         {
             "role": "user",
             "content": [{"type": "text", "text": prompt}],
@@ -233,8 +233,8 @@ message=[
         }
     ]
 
-# data = claude_response(messages=message)
-# print(data)
+data = non_stream_get_response_bedrock(messages=message)
+print(data)
 import boto3
 import json
 from typing import List, Optional

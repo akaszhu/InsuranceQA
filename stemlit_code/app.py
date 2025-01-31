@@ -8,7 +8,7 @@ import re
 import contextlib
 from prompts import BRD_to_product_stories,refiner,BRD_to_QA_stories
 from schema import UserStoryCollection,ProjectDetails,TestCaseCreateRequest
-from openai_uitls import openai_response_structured,openai_response,non_stream_get_response_openai
+from openai_uitls import non_stream_get_response_bedrock,claude_response,invoke_claude_with_model #openai_response_structured,openai_response,non_stream_get_response_openai, 
 import pandas as pd
 from pdfminer.high_level import extract_text
 
@@ -39,14 +39,13 @@ def convert_docx_to_pdf(docx_file):
 def chat_with_document(user_query, document_text):
     # Combine user query with the extracted text
     messages = [
-        {"role": "system", "content": "You are a helpful assistant who answers questions based on the provided document."},
+        # {"role": "assistant", "content": "You are a helpful assistant who answers questions based on the provided document."},
         {"role": "user", "content": f"Document content: {document_text}\n\nQuestion: {user_query}"}
     ]
     # Use OpenAI or another model to generate a response
-    response = non_stream_get_response_openai(messages=messages, model="gpt-4", max_tokens=1000, temperature=0.7, stream=False)
+    response = non_stream_get_response_bedrock(messages=messages, max_tokens=1000, temperature=0.7)
  
-    return response["response"]
-
+    return response
 # Function to extract text from PDF
 def extract_text_from_pdf(pdf_path):
     try:
@@ -63,10 +62,18 @@ def extract_text_from_pdf(pdf_path):
 
 def summarize_brd(analyzed_text,role):
     messages=[
-        {"role":"system",
-         "content":f"Create a neat summary for the {role} on this brd document. Make it personalized based on the story, This is the brd{analyzed_text}"}
+        # {
+        #     "role": "user",
+        #     "content": [{"type": "text", "text": "hi"}],
+        # },
+
+        {"role":"user",
+        "content": f"Create a neat summary for the {role} on this brd document. Make it personalized based on the story, This is the brd{analyzed_text}"
+        }
     ]
-    st.write_stream(openai_response(messages=messages,max_tokens=2000,temperature=0.5,stream=True))
+    
+    # st.write_stream(claude_response(messages=messages,max_tokens=2000,temperature=0.5))
+    st.write(non_stream_get_response_bedrock(messages=messages,max_tokens=2000,temperature=0.5))
 
 def display_story(result):
     st.session_state["story_created"].append(result)
@@ -98,11 +105,11 @@ def generate(test_cases):
         prompt=refiner+str(test_cases)
         messages=[
             {
-                "role":"system",
+                "role":"assistant",
                 "content":prompt
             }
         ]
-        response = openai_response_structured(messages=messages,model="gpt-4o",max_tokens=4096,temperature=0.2,stream=False,output_model=ProjectDetails)
+        response = invoke_claude_with_model(query=prompt,max_tokens=4096,temprature=0.3)# openai_response_structured(messages=messages,model="gpt-4o",max_tokens=4096,temperature=0.2,stream=False,output_model=ProjectDetails)
         response=response.__dict__
         modules=response[ "modules"]
         st.session_state["brd_filter"] = response
@@ -124,7 +131,8 @@ def generate(test_cases):
                 "content":str(i)+"\n make n number of detailed tasks helping managers and developers"
             }
             )
-            result =openai_response_structured(messages=messages,model="gpt-4o",max_tokens=4096,temperature=0.2,stream=False,output_model=UserStoryCollection)
+            prompt=str(i)+"\n make n number of detailed tasks helping managers and developers"
+            result =invoke_claude_with_model(max_tokens=4096,temprature=0.2,query=prompt)#openai_response_structured(messages=messages,model="gpt-4o",max_tokens=4096,temperature=0.2,stream=False,output_model=UserStoryCollection)
             messages.append(
             {
                 "role":"system",
